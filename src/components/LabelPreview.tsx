@@ -1,0 +1,137 @@
+import { useMemo } from 'react';
+import bwipjs from 'bwip-js/browser';
+import type { LabelConfig, LabelData } from '../types';
+import { computeLayout } from '../lib/layout';
+
+const FONT = "'Arial Narrow', Arial, 'Helvetica Neue', sans-serif";
+
+export function LabelPreview({ data, config }: { data: LabelData; config: LabelConfig }) {
+  const L = computeLayout(config, data);
+  const W = config.widthMm;
+  const H = config.heightMm;
+
+  const barcodeUri = useMemo(() => {
+    if (!config.showBarcode || !L.barcode.code) return null;
+    try {
+      const svg = bwipjs.toSVG({
+        bcid: 'code128',
+        text: L.barcode.code,
+        height: 10,
+        includetext: false,
+      });
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    } catch {
+      return null;
+    }
+  }, [config.showBarcode, L.barcode.code]);
+
+  return (
+    <svg
+      className="label-svg"
+      viewBox={`0 0 ${W} ${H}`}
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label={`Etykieta ${L.barcode.code}`}
+    >
+      <rect x={0} y={0} width={W} height={H} fill="#fff" />
+
+      <text
+        x={L.rack.x}
+        y={L.rack.y + L.rack.h / 2}
+        fontSize={L.rack.fontMm}
+        fontFamily={FONT}
+        fontWeight="bold"
+        fill="#000"
+        dominantBaseline="central"
+      >
+        {data.rack}
+      </text>
+
+      {config.showColumnBar && (
+        <g>
+          <rect
+            x={L.columnBar.x}
+            y={L.columnBar.y}
+            width={L.columnBar.w}
+            height={L.columnBar.h}
+            fill="#000"
+          />
+          <text
+            x={L.columnBar.x + L.inset}
+            y={L.columnBar.y + L.columnBar.h / 2}
+            fontSize={L.columnBar.labelFontMm}
+            fontFamily={FONT}
+            fill="#fff"
+            dominantBaseline="central"
+          >
+            {config.columnLabel}
+          </text>
+          <text
+            x={L.columnBar.x + L.columnBar.w - L.inset}
+            y={L.columnBar.y + L.columnBar.h / 2}
+            fontSize={L.columnBar.valueFontMm}
+            fontFamily={FONT}
+            fontWeight="bold"
+            fill="#fff"
+            textAnchor="end"
+            dominantBaseline="central"
+          >
+            {data.column}
+          </text>
+        </g>
+      )}
+
+      {config.showShelf && (
+        <g>
+          <text
+            x={L.shelfRow.x + L.inset}
+            y={L.shelfRow.y + L.shelfRow.h / 2}
+            fontSize={L.shelfRow.labelFontMm}
+            fontFamily={FONT}
+            fill="#000"
+            dominantBaseline="central"
+          >
+            {config.shelfLabel}
+          </text>
+          <text
+            x={L.shelfRow.x + L.shelfRow.w - L.inset}
+            y={L.shelfRow.y + L.shelfRow.h / 2}
+            fontSize={L.shelfRow.valueFontMm}
+            fontFamily={FONT}
+            fontWeight="bold"
+            fill="#000"
+            textAnchor="end"
+            dominantBaseline="central"
+          >
+            {data.shelf}
+          </text>
+        </g>
+      )}
+
+      {barcodeUri && (
+        <image
+          href={barcodeUri}
+          x={L.barcode.x}
+          y={L.barcode.y}
+          width={L.barcode.w}
+          height={L.barcode.h}
+          preserveAspectRatio="none"
+        />
+      )}
+
+      {config.showBarcodeText && (
+        <text
+          x={W / 2}
+          y={L.barcodeText.y + L.barcodeText.h / 2}
+          fontSize={L.barcodeText.fontMm}
+          fontFamily={FONT}
+          fill="#000"
+          textAnchor="middle"
+          dominantBaseline="central"
+        >
+          {L.barcodeText.text}
+        </text>
+      )}
+    </svg>
+  );
+}
