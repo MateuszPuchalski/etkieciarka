@@ -61,6 +61,21 @@ describe('computeLayout', () => {
     expect(L2.rack.w).toBeGreaterThan(L1.rack.w);
   });
 
+  it('generuje linie podziału: pionową i poziomą', () => {
+    const L = computeLayout(DEFAULT_CONFIG, DATA);
+    expect(L.dividers).toHaveLength(2);
+    const [v, h] = L.dividers;
+    expect(v.h).toBeGreaterThan(v.w); // pionowa
+    expect(h.w).toBeGreaterThan(h.h); // pozioma
+    // pionowa dochodzi dokładnie do poziomej
+    expect(v.y + v.h).toBeCloseTo(h.y + h.h, 5);
+  });
+
+  it('pomija linie podziału gdy wyłączone', () => {
+    const L = computeLayout({ ...DEFAULT_CONFIG, showDividers: false }, DATA);
+    expect(L.dividers).toHaveLength(0);
+  });
+
   it('dobiera moduł kodu ≥ 2 doty dla małej etykiety przy 203 dpi', () => {
     const L = computeLayout({ ...DEFAULT_CONFIG, widthMm: 57, heightMm: 32 }, DATA);
     expect(L.barcode.moduleDots).toBeGreaterThanOrEqual(2);

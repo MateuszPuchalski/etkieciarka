@@ -129,6 +129,14 @@ export function SettingsPanel({
           />
           Tekst pod kodem
         </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={config.showDividers}
+            onChange={(e) => onChange({ showDividers: e.target.checked })}
+          />
+          Linie podziału
+        </label>
       </div>
 
       <h3>Teksty</h3>

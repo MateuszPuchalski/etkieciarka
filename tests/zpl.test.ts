@@ -32,9 +32,15 @@ describe('zplForLabel', () => {
       showColumnBar: false,
       showBarcode: false,
       showBarcodeText: false,
+      showDividers: false,
     });
     expect(z).not.toContain('^GB');
     expect(z).not.toContain('^BC');
+  });
+
+  it('rysuje linie podziału jako ^GB', () => {
+    // pionowa + pozioma linia oraz wypełniony pasek kolumny = 3 × ^GB
+    expect(zpl.match(/\^GB/g)).toHaveLength(3);
   });
 
   it('usuwa znaki sterujące ZPL z danych', () => {

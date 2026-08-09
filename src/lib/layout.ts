@@ -20,6 +20,7 @@ export interface Box {
  *  prawdy dla podglądu SVG, druku z przeglądarki i generatora ZPL. */
 export interface LabelLayout {
   inset: number; // wewnętrzny margines tekstu w wierszach KOLUMNA/Półka
+  dividers: Box[]; // czarne linie oddzielające sekcje
   rack: Box & { fontMm: number };
   columnBar: Box & { labelFontMm: number; valueFontMm: number };
   shelfRow: Box & { labelFontMm: number; valueFontMm: number };
@@ -63,8 +64,25 @@ export function computeLayout(cfg: LabelConfig, data: LabelData): LabelLayout {
   const bcW = Math.min(innerW, modules * moduleDots * dotMm);
   const bcY = topY + topH + gapB;
 
+  // Linie podziału jak na oryginalnych etykietach: pionowa między kodem
+  // regału a kolumną/półką, pozioma nad sekcją kodu kreskowego.
+  const dividers: Box[] = [];
+  if (cfg.showDividers) {
+    const t = clamp(W * 0.004, 0.3, 0.6);
+    const hLineY = gapB > 0 ? topY + topH + gapB / 2 - t / 2 : null;
+    if (hasRight) {
+      const vX = pad + leftW + gapMid / 2 - t / 2;
+      const vBottom = hLineY !== null ? hLineY + t : H - pad;
+      dividers.push({ x: vX, y: topY, w: t, h: vBottom - topY });
+    }
+    if (hLineY !== null) {
+      dividers.push({ x: pad, y: hLineY, w: innerW, h: t });
+    }
+  }
+
   return {
     inset,
+    dividers,
     rack: { x: pad, y: topY, w: leftW, h: topH, fontMm: rackFont },
     columnBar: { x: rightX, y: topY, w: rightW, h: rowH, labelFontMm, valueFontMm },
     shelfRow: { x: rightX, y: topY + rowH + rowGap, w: rightW, h: rowH, labelFontMm, valueFontMm },

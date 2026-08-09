@@ -35,6 +35,10 @@ export function LabelPreview({ data, config }: { data: LabelData; config: LabelC
     >
       <rect x={0} y={0} width={W} height={H} fill="#fff" />
 
+      {L.dividers.map((dv, i) => (
+        <rect key={i} x={dv.x} y={dv.y} width={dv.w} height={dv.h} fill="#000" />
+      ))}
+
       <text
         x={L.rack.x}
         y={L.rack.y + L.rack.h / 2}

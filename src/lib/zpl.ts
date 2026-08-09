@@ -29,6 +29,12 @@ export function zplForLabel(data: LabelData, cfg: LabelConfig): string {
     '^LH0,0',
   ];
 
+  for (const dv of L.dividers) {
+    const w = Math.max(1, d(dv.w));
+    const h = Math.max(1, d(dv.h));
+    z.push(`^FO${d(dv.x)},${d(dv.y)}^GB${w},${h},${Math.min(w, h)}^FS`);
+  }
+
   const rf = d(L.rack.fontMm);
   z.push(
     `^FO${d(L.rack.x)},${d(L.rack.y + (L.rack.h - L.rack.fontMm) / 2)}^A0N,${rf},${rf}^FD${fd(data.rack, a)}^FS`,

@@ -16,6 +16,7 @@ export interface LabelConfig {
   showShelf: boolean;
   showBarcode: boolean;
   showBarcodeText: boolean;
+  showDividers: boolean;
   columnLabel: string;
   shelfLabel: string;
   codeTemplate: string; // np. "{regal}-{kolumna}-{polka}"
@@ -63,6 +64,7 @@ export const DEFAULT_CONFIG: LabelConfig = {
   showShelf: true,
   showBarcode: true,
   showBarcodeText: true,
+  showDividers: true,
   columnLabel: 'KOLUMNA',
   shelfLabel: 'Półka',
   codeTemplate: '{regal}-{kolumna}-{polka}',
