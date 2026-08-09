@@ -48,7 +48,8 @@ export function computeLayout(cfg: LabelConfig, data: LabelData): LabelLayout {
   const leftW = hasRight ? innerW * 0.42 : innerW;
 
   const rackLen = Math.max(2, data.rack.length);
-  const rackFont = Math.min(topH * 0.75, leftW / (rackLen * 0.6)) * cfg.rackFontScale;
+  // 0.55 ≈ szerokość znaku czcionki condensed względem jej rozmiaru
+  const rackFont = Math.min(topH * 0.75, leftW / (rackLen * 0.55)) * cfg.rackFontScale;
 
   const rightX = pad + leftW + gapMid;
   const rightW = W - pad - rightX;

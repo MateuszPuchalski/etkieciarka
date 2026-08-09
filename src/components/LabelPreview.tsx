@@ -3,7 +3,7 @@ import bwipjs from 'bwip-js/browser';
 import type { LabelConfig, LabelData } from '../types';
 import { computeLayout } from '../lib/layout';
 
-const FONT = "'Arial Narrow', Arial, 'Helvetica Neue', sans-serif";
+const FONT = "'Roboto Condensed', 'Arial Narrow', Arial, 'Helvetica Neue', sans-serif";
 
 export function LabelPreview({ data, config }: { data: LabelData; config: LabelConfig }) {
   const L = computeLayout(config, data);

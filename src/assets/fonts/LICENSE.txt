@@ -1,0 +1,5 @@
+Roboto Condensed — Copyright The Roboto Project Authors
+(https://github.com/googlefonts/roboto-classic)
+
+Licencja: SIL Open Font License 1.1 (https://openfontlicense.org)
+Pliki woff2 pobrane z Google Fonts (subsety latin i latin-ext).
