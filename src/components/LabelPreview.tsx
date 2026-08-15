@@ -65,6 +65,7 @@ export function LabelPreview({ data, config }: { data: LabelData; config: LabelC
             y={L.columnBar.y + L.columnBar.h / 2}
             fontSize={L.columnBar.labelFontMm}
             fontFamily={FONT}
+            fontWeight="bold"
             fill="#fff"
             dominantBaseline="central"
           >
@@ -92,6 +93,7 @@ export function LabelPreview({ data, config }: { data: LabelData; config: LabelC
             y={L.shelfRow.y + L.shelfRow.h / 2}
             fontSize={L.shelfRow.labelFontMm}
             fontFamily={FONT}
+            fontWeight="bold"
             fill="#000"
             dominantBaseline="central"
           >

@@ -72,7 +72,9 @@ export function computeLayout(cfg: LabelConfig, data: LabelData): LabelLayout {
     const t = clamp(W * 0.004, 0.3, 0.6);
     const hLineY = gapB > 0 ? topY + topH + gapB / 2 - t / 2 : null;
     if (hasRight) {
-      const vX = pad + leftW + gapMid / 2 - t / 2;
+      // Prawa krawędź linii styka się z lewą krawędzią paska KOLUMNA,
+      // więc linia wtapia się w jego czarne tło.
+      const vX = pad + leftW + gapMid - t;
       const vBottom = hLineY !== null ? hLineY + t : H - pad;
       dividers.push({ x: vX, y: topY, w: t, h: vBottom - topY });
     }
