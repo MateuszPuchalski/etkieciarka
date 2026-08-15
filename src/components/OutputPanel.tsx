@@ -1,5 +1,13 @@
 import { useState } from 'react';
 
+function etykietyForm(n: number): string {
+  if (n === 1) return 'etykieta';
+  const d = n % 10;
+  const dd = n % 100;
+  if (d >= 2 && d <= 4 && (dd < 12 || dd > 14)) return 'etykiety';
+  return 'etykiet';
+}
+
 export function OutputPanel({ zpl, count }: { zpl: string; count: number }) {
   const [copied, setCopied] = useState(false);
 
@@ -27,7 +35,7 @@ export function OutputPanel({ zpl, count }: { zpl: string; count: number }) {
     <div className="output">
       <div className="button-row">
         <button className="primary" onClick={() => window.print()}>
-          🖨️ Drukuj ({count} {count === 1 ? 'etykieta' : 'etykiet'})
+          🖨️ Drukuj ({count} {etykietyForm(count)})
         </button>
         <button onClick={downloadZpl}>Pobierz .zpl</button>
         <button onClick={copyZpl}>{copied ? 'Skopiowano ✓' : 'Kopiuj ZPL'}</button>
