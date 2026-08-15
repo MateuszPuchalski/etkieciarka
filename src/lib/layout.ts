@@ -55,8 +55,14 @@ export function computeLayout(cfg: LabelConfig, data: LabelData): LabelLayout {
   const rightW = W - pad - rightX;
   const rowH = topH * 0.44;
   const rowGap = topH * 0.12;
-  const labelFontMm = rowH * 0.42 * cfg.headerFontScale;
+  const baseLabelFont = rowH * 0.42 * cfg.headerFontScale;
   const valueFontMm = rowH * 0.66 * cfg.headerFontScale;
+  // Tekst z małymi literami (x-height ≈ 53% stopnia pisma) wygląda na mniejszy
+  // niż wersaliki (≈ 72%) — kompensujemy stopień, by oba nagłówki były
+  // optycznie tej samej wielkości (tak jak na oryginalnych etykietach).
+  const caseComp = (s: string) => (/\p{Ll}/u.test(s) ? 1.32 : 1);
+  const columnLabelFontMm = baseLabelFont * caseComp(cfg.columnLabel);
+  const shelfLabelFontMm = baseLabelFont * caseComp(cfg.shelfLabel);
 
   const code = renderCode(cfg.codeTemplate, data);
   const modules = Math.max(1, code128Modules(code));
@@ -87,8 +93,15 @@ export function computeLayout(cfg: LabelConfig, data: LabelData): LabelLayout {
     inset,
     dividers,
     rack: { x: pad, y: topY, w: leftW, h: topH, fontMm: rackFont },
-    columnBar: { x: rightX, y: topY, w: rightW, h: rowH, labelFontMm, valueFontMm },
-    shelfRow: { x: rightX, y: topY + rowH + rowGap, w: rightW, h: rowH, labelFontMm, valueFontMm },
+    columnBar: { x: rightX, y: topY, w: rightW, h: rowH, labelFontMm: columnLabelFontMm, valueFontMm },
+    shelfRow: {
+      x: rightX,
+      y: topY + rowH + rowGap,
+      w: rightW,
+      h: rowH,
+      labelFontMm: shelfLabelFontMm,
+      valueFontMm,
+    },
     barcode: { x: pad + (innerW - bcW) / 2, y: bcY, w: bcW, h: bcH, moduleDots, code },
     barcodeText: {
       x: pad,

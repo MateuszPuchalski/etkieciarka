@@ -61,6 +61,13 @@ describe('computeLayout', () => {
     expect(L2.rack.w).toBeGreaterThan(L1.rack.w);
   });
 
+  it('kompensuje stopień pisma dla nagłówka z małymi literami', () => {
+    const L = computeLayout(DEFAULT_CONFIG, DATA); // "KOLUMNA" caps, "Półka" mixed
+    expect(L.shelfRow.labelFontMm).toBeCloseTo(L.columnBar.labelFontMm * 1.32, 5);
+    const caps = computeLayout({ ...DEFAULT_CONFIG, shelfLabel: 'PÓŁKA' }, DATA);
+    expect(caps.shelfRow.labelFontMm).toBeCloseTo(caps.columnBar.labelFontMm, 5);
+  });
+
   it('generuje linie podziału: pionową i poziomą', () => {
     const L = computeLayout(DEFAULT_CONFIG, DATA);
     expect(L.dividers).toHaveLength(2);
