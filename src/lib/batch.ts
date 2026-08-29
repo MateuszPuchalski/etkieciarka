@@ -9,19 +9,40 @@ export function parseRacks(racks: string): string[] {
     .filter(Boolean);
 }
 
-/** Rozwija zakresy (regały × kolumny × półki) do listy etykiet, z limitem MAX_BATCH. */
+/**
+ * Rozwija zakresy do kolejności odpowiadającej fizycznemu naklejaniu.
+ * Domyślnie drukujemy półka po półce: dla jednej półki wszystkie kolumny,
+ * potem przechodzimy do następnej półki. Starsze zapisy bez `order`
+ * również otrzymują ten nowy, praktyczniejszy porządek.
+ */
 export function expandBatch(b: BatchSpec): LabelData[] {
   const racks = parseRacks(b.racks);
   const padLen = Math.max(1, Math.min(4, Math.floor(b.pad) || 1));
   const pad = (n: number) => String(n).padStart(padLen, '0');
   const out: LabelData[] = [];
+  const order = b.order ?? 'shelf-first';
+
+  const push = (rack: string, column: number, shelf: number) => {
+    if (out.length >= MAX_BATCH) return false;
+    out.push({ rack, column: pad(column), shelf: pad(shelf) });
+    return true;
+  };
+
   for (const rack of racks) {
-    for (let c = b.colFrom; c <= b.colTo; c++) {
+    if (order === 'column-first') {
+      for (let c = b.colFrom; c <= b.colTo; c++) {
+        for (let s = b.shelfFrom; s <= b.shelfTo; s++) {
+          if (!push(rack, c, s)) return out;
+        }
+      }
+    } else {
       for (let s = b.shelfFrom; s <= b.shelfTo; s++) {
-        if (out.length >= MAX_BATCH) return out;
-        out.push({ rack, column: pad(c), shelf: pad(s) });
+        for (let c = b.colFrom; c <= b.colTo; c++) {
+          if (!push(rack, c, s)) return out;
+        }
       }
     }
   }
+
   return out;
 }
