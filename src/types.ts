@@ -12,6 +12,7 @@ export interface LabelConfig {
   heightMm: number;
   dpi: 203 | 300;
 
+  // Obszar roboczy
   marginTopMm: number;
   marginRightMm: number;
   marginBottomMm: number;
@@ -21,36 +22,71 @@ export interface LabelConfig {
   rowGapMm: number;
   dividerThicknessMm: number;
 
+  // Regał
   showRack: boolean;
+  lockRack: boolean;
   rackFontScale: number;
   rackAlign: HorizontalAlign;
   rackOffsetX: number;
   rackOffsetY: number;
+  rackWidthMm: number; // 0 = auto
+  rackHeightMm: number; // 0 = auto
 
+  // Kolumna
+  showColumnBar: boolean;
+  lockColumn: boolean;
+  columnOffsetX: number;
+  columnOffsetY: number;
+  columnWidthMm: number; // 0 = auto
+  columnHeightMm: number; // 0 = auto
+
+  // Półka
+  showShelf: boolean;
+  lockShelf: boolean;
+  shelfOffsetX: number;
+  shelfOffsetY: number;
+  shelfWidthMm: number; // 0 = auto
+  shelfHeightMm: number; // 0 = auto
+
+  // Teksty kolumny / półki
   headerFontScale: number;
   valueFontScale: number;
   rightRowHeightPercent: number;
-  rightOffsetX: number;
-  rightOffsetY: number;
-  showColumnBar: boolean;
-  showShelf: boolean;
   showDividers: boolean;
 
+  // Pola legacy pozostawione dla zgodności starszych zapisów localStorage.
+  rightOffsetX: number;
+  rightOffsetY: number;
+
+  // Kod kreskowy
+  showBarcode: boolean;
+  lockBarcode: boolean;
   barcodeHeightMm: number;
   barcodeWidthPercent: number;
+  barcodeWidthMm: number; // 0 = auto / barcodeWidthPercent
   barcodeOffsetX: number;
   barcodeOffsetY: number;
+
+  // Tekst pod kodem
+  showBarcodeText: boolean;
+  lockBarcodeText: boolean;
   barcodeTextFontScale: number;
   barcodeTextBold: boolean;
   barcodeTextOffsetX: number;
   barcodeTextOffsetY: number;
-  showBarcode: boolean;
-  showBarcodeText: boolean;
+  barcodeTextWidthMm: number; // 0 = auto
+  barcodeTextHeightMm: number; // 0 = auto
 
   columnLabel: string;
   shelfLabel: string;
   codeTemplate: string;
   asciiFallback: boolean;
+
+  // Kalibracja fizycznego wydruku. Nie wpływa na projekt/canvas.
+  printOffsetXmm: number;
+  printOffsetYmm: number;
+  printScaleXPercent: number;
+  printScaleYPercent: number;
 }
 
 export interface BatchSpec {
@@ -104,35 +140,61 @@ export const DEFAULT_CONFIG: LabelConfig = {
   dividerThicknessMm: 0.4,
 
   showRack: true,
+  lockRack: false,
   rackFontScale: 1,
   rackAlign: 'center',
   rackOffsetX: 0,
   rackOffsetY: 0,
+  rackWidthMm: 0,
+  rackHeightMm: 0,
+
+  showColumnBar: true,
+  lockColumn: false,
+  columnOffsetX: 0,
+  columnOffsetY: 0,
+  columnWidthMm: 0,
+  columnHeightMm: 0,
+
+  showShelf: true,
+  lockShelf: false,
+  shelfOffsetX: 0,
+  shelfOffsetY: 0,
+  shelfWidthMm: 0,
+  shelfHeightMm: 0,
 
   headerFontScale: 1,
   valueFontScale: 1,
   rightRowHeightPercent: 44,
+  showDividers: true,
   rightOffsetX: 0,
   rightOffsetY: 0,
-  showColumnBar: true,
-  showShelf: true,
-  showDividers: true,
 
+  showBarcode: true,
+  lockBarcode: false,
   barcodeHeightMm: 12,
   barcodeWidthPercent: 100,
+  barcodeWidthMm: 0,
   barcodeOffsetX: 0,
   barcodeOffsetY: 0,
+
+  showBarcodeText: true,
+  lockBarcodeText: false,
   barcodeTextFontScale: 1,
   barcodeTextBold: false,
   barcodeTextOffsetX: 0,
   barcodeTextOffsetY: 0,
-  showBarcode: true,
-  showBarcodeText: true,
+  barcodeTextWidthMm: 0,
+  barcodeTextHeightMm: 0,
 
   columnLabel: 'KOLUMNA',
   shelfLabel: 'Półka',
   codeTemplate: '{regal}-{kolumna}-{polka}',
   asciiFallback: false,
+
+  printOffsetXmm: 0,
+  printOffsetYmm: 0,
+  printScaleXPercent: 100,
+  printScaleYPercent: 100,
 };
 
 export const DEFAULT_STATE: AppState = {
