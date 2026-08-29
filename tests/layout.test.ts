@@ -78,13 +78,59 @@ describe('computeLayout', () => {
     expect(L.dividers).toHaveLength(0);
   });
 
-  it('pozwala przesuwać kolumnę i półkę niezależnie', () => {
-    const base = computeLayout(DEFAULT_CONFIG, DATA);
-    const moved = computeLayout({ ...DEFAULT_CONFIG, columnOffsetX: -2, shelfOffsetY: 2 }, DATA);
-    expect(moved.columnBar.x).toBeCloseTo(base.columnBar.x - 2, 5);
+  it('pozwala przesuwać kolumnę i półkę niezależnie tylko wewnątrz ich slotów', () => {
+    const base = computeLayout({
+      ...DEFAULT_CONFIG,
+      columnWidthMm: 20,
+      columnHeightMm: 5,
+      shelfWidthMm: 20,
+      shelfHeightMm: 5,
+    }, DATA);
+    const moved = computeLayout({
+      ...DEFAULT_CONFIG,
+      columnWidthMm: 20,
+      columnHeightMm: 5,
+      shelfWidthMm: 20,
+      shelfHeightMm: 5,
+      columnOffsetX: 3,
+      shelfOffsetY: 3,
+    }, DATA);
+
+    expect(moved.columnBar.x).toBeGreaterThan(base.columnBar.x);
     expect(moved.columnBar.y).toBeCloseTo(base.columnBar.y, 5);
-    expect(moved.shelfRow.y).toBeCloseTo(base.shelfRow.y + 2, 5);
+    expect(moved.shelfRow.y).toBeGreaterThan(base.shelfRow.y);
     expect(moved.shelfRow.x).toBeCloseTo(base.shelfRow.x, 5);
+
+    expect(moved.columnBar.x).toBeGreaterThanOrEqual(moved.sections.columnSlot.x);
+    expect(moved.columnBar.x + moved.columnBar.w).toBeLessThanOrEqual(
+      moved.sections.columnSlot.x + moved.sections.columnSlot.w + 0.001,
+    );
+    expect(moved.shelfRow.y).toBeGreaterThanOrEqual(moved.sections.shelfSlot.y);
+    expect(moved.shelfRow.y + moved.shelfRow.h).toBeLessThanOrEqual(
+      moved.sections.shelfSlot.y + moved.sections.shelfSlot.h + 0.001,
+    );
+  });
+
+  it('nie pozwala elementom wyjść poza przypisaną sekcję', () => {
+    const L = computeLayout({
+      ...DEFAULT_CONFIG,
+      columnWidthMm: 20,
+      columnHeightMm: 5,
+      shelfWidthMm: 20,
+      shelfHeightMm: 5,
+      barcodeWidthMm: 30,
+      columnOffsetX: -100,
+      shelfOffsetY: 100,
+      barcodeOffsetX: 100,
+    }, DATA);
+
+    expect(L.columnBar.x).toBeCloseTo(L.sections.columnSlot.x, 5);
+    expect(L.shelfRow.y + L.shelfRow.h).toBeLessThanOrEqual(
+      L.sections.shelfSlot.y + L.sections.shelfSlot.h + 0.001,
+    );
+    expect(L.barcode.x + L.barcode.w).toBeLessThanOrEqual(
+      L.sections.barcodeSlot.x + L.sections.barcodeSlot.w + 0.001,
+    );
   });
 
   it('respektuje jawne wymiary elementów', () => {
