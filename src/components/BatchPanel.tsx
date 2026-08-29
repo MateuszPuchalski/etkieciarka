@@ -25,6 +25,7 @@ export function BatchPanel({
     Math.max(0, value.colTo - value.colFrom + 1) *
     Math.max(0, value.shelfTo - value.shelfFrom + 1);
   const preview = labels.slice(0, 8).map((l) => renderCode(codeTemplate, l));
+  const order = value.order ?? 'shelf-first';
 
   return (
     <div>
@@ -59,14 +60,40 @@ export function BatchPanel({
           <input type="number" value={value.shelfTo} onChange={num('shelfTo')} />
         </label>
       </div>
+
+      <div className="batch-order-block">
+        <span className="batch-order-title">Kolejność na rolce</span>
+        <div className="segmented full">
+          <button
+            type="button"
+            className={order === 'shelf-first' ? 'active' : ''}
+            onClick={() => onChange({ ...value, order: 'shelf-first' })}
+          >
+            Półka po półce
+          </button>
+          <button
+            type="button"
+            className={order === 'column-first' ? 'active' : ''}
+            onClick={() => onChange({ ...value, order: 'column-first' })}
+          >
+            Kolumna po kolumnie
+          </button>
+        </div>
+        <small>
+          {order === 'shelf-first'
+            ? 'Najpierw wszystkie kolumny na jednej półce, potem kolejna półka — wygodne przy naklejaniu wzdłuż regału.'
+            : 'Najpierw wszystkie półki jednej kolumny, potem kolejna kolumna.'}
+        </small>
+      </div>
+
       <p className="batch-info">
         Etykiet w serii: <strong>{labels.length}</strong>
         {total > MAX_BATCH && ` (obcięto do limitu ${MAX_BATCH})`}
       </p>
       {preview.length > 0 && (
-        <p className="batch-preview">
-          {preview.join(', ')}
-          {labels.length > preview.length && ', …'}
+        <p className="batch-preview" title="Pierwsze etykiety w dokładnej kolejności wydruku">
+          <strong>Kolejność druku:</strong> {preview.join(' → ')}
+          {labels.length > preview.length && ' → …'}
         </p>
       )}
     </div>
