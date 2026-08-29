@@ -13,7 +13,10 @@ export interface LabelConfig {
   dpi: 203 | 300;
 
   // Ogólna geometria etykiety
-  contentPaddingMm: number;
+  marginTopMm: number;
+  marginRightMm: number;
+  marginBottomMm: number;
+  marginLeftMm: number;
   sectionGapMm: number;
   rackWidthPercent: number;
   rowGapMm: number;
@@ -36,6 +39,7 @@ export interface LabelConfig {
   barcodeHeightMm: number;
   barcodeWidthPercent: number;
   barcodeTextFontScale: number;
+  barcodeTextBold: boolean;
   showBarcode: boolean;
   showBarcodeText: boolean;
 
@@ -80,7 +84,10 @@ export const DEFAULT_CONFIG: LabelConfig = {
   heightMm: 60,
   dpi: 203,
 
-  contentPaddingMm: 3,
+  marginTopMm: 3,
+  marginRightMm: 3,
+  marginBottomMm: 3,
+  marginLeftMm: 3,
   sectionGapMm: 2,
   rackWidthPercent: 42,
   rowGapMm: 3,
@@ -88,7 +95,7 @@ export const DEFAULT_CONFIG: LabelConfig = {
 
   showRack: true,
   rackFontScale: 1,
-  rackAlign: 'left',
+  rackAlign: 'center',
 
   headerFontScale: 1,
   valueFontScale: 1,
@@ -100,6 +107,7 @@ export const DEFAULT_CONFIG: LabelConfig = {
   barcodeHeightMm: 12,
   barcodeWidthPercent: 100,
   barcodeTextFontScale: 1,
+  barcodeTextBold: false,
   showBarcode: true,
   showBarcodeText: true,
 
