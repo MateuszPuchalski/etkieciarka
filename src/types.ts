@@ -1,8 +1,8 @@
 /** Dane jednej fizycznej etykiety lokalizacyjnej. */
 export interface LabelData {
-  rack: string;   // regał, np. "C03"
-  column: string; // kolumna, np. "06"
-  shelf: string;  // półka, np. "03"
+  rack: string;
+  column: string;
+  shelf: string;
 }
 
 export type HorizontalAlign = 'left' | 'center' | 'right';
@@ -12,7 +12,6 @@ export interface LabelConfig {
   heightMm: number;
   dpi: 203 | 300;
 
-  // Ogólna geometria etykiety
   marginTopMm: number;
   marginRightMm: number;
   marginBottomMm: number;
@@ -22,40 +21,45 @@ export interface LabelConfig {
   rowGapMm: number;
   dividerThicknessMm: number;
 
-  // Regał
   showRack: boolean;
-  rackFontScale: number;   // 0.5–1.5
+  rackFontScale: number;
   rackAlign: HorizontalAlign;
+  rackOffsetX: number;
+  rackOffsetY: number;
 
-  // Kolumna / półka
-  headerFontScale: number; // 0.5–1.5
-  valueFontScale: number;  // 0.5–1.5
+  headerFontScale: number;
+  valueFontScale: number;
   rightRowHeightPercent: number;
+  rightOffsetX: number;
+  rightOffsetY: number;
   showColumnBar: boolean;
   showShelf: boolean;
   showDividers: boolean;
 
-  // Kod kreskowy
   barcodeHeightMm: number;
   barcodeWidthPercent: number;
+  barcodeOffsetX: number;
+  barcodeOffsetY: number;
   barcodeTextFontScale: number;
   barcodeTextBold: boolean;
+  barcodeTextOffsetX: number;
+  barcodeTextOffsetY: number;
   showBarcode: boolean;
   showBarcodeText: boolean;
 
   columnLabel: string;
   shelfLabel: string;
-  codeTemplate: string; // np. "{regal}-{kolumna}-{polka}"
-  asciiFallback: boolean; // transliteracja polskich znaków w ZPL
+  codeTemplate: string;
+  asciiFallback: boolean;
 }
 
 export interface BatchSpec {
-  racks: string; // lista regałów po przecinku, np. "C03" lub "C03, C04"
+  racks: string;
   colFrom: number;
   colTo: number;
   shelfFrom: number;
   shelfTo: number;
-  pad: number; // liczba cyfr (zero-padding)
+  pad: number;
 }
 
 export type Tab = 'single' | 'batch';
@@ -102,18 +106,26 @@ export const DEFAULT_CONFIG: LabelConfig = {
   showRack: true,
   rackFontScale: 1,
   rackAlign: 'center',
+  rackOffsetX: 0,
+  rackOffsetY: 0,
 
   headerFontScale: 1,
   valueFontScale: 1,
   rightRowHeightPercent: 44,
+  rightOffsetX: 0,
+  rightOffsetY: 0,
   showColumnBar: true,
   showShelf: true,
   showDividers: true,
 
   barcodeHeightMm: 12,
   barcodeWidthPercent: 100,
+  barcodeOffsetX: 0,
+  barcodeOffsetY: 0,
   barcodeTextFontScale: 1,
   barcodeTextBold: false,
+  barcodeTextOffsetX: 0,
+  barcodeTextOffsetY: 0,
   showBarcode: true,
   showBarcodeText: true,
 
