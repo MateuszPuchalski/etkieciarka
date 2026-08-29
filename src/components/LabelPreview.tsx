@@ -131,10 +131,11 @@ export function LabelPreview({ data, config }: { data: LabelData; config: LabelC
 
       {config.showBarcodeText && (
         <text
-          x={W / 2}
+          x={L.barcodeText.x + L.barcodeText.w / 2}
           y={L.barcodeText.y + L.barcodeText.h / 2}
           fontSize={L.barcodeText.fontMm}
           fontFamily={FONT}
+          fontWeight={config.barcodeTextBold ? 'bold' : 'normal'}
           fill="#000"
           textAnchor="middle"
           dominantBaseline="central"
