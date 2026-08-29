@@ -140,7 +140,7 @@ export const DEFAULT_CONFIG: LabelConfig = {
   marginLeftMm: 0.5,
   sectionGapMm: 0.5,
   rackWidthPercent: 49,
-  rowGapMm: 1.2,
+  rowGapMm: 0.6,
   dividerThicknessMm: 0.35,
 
   showRack: true,
@@ -168,7 +168,7 @@ export const DEFAULT_CONFIG: LabelConfig = {
 
   headerFontScale: 0.86,
   valueFontScale: 1.12,
-  rightRowHeightPercent: 44,
+  rightRowHeightPercent: 49,
   showDividers: true,
   rightOffsetX: 0,
   rightOffsetY: 0,
