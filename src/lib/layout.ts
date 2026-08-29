@@ -165,7 +165,9 @@ export function computeLayout(cfg: LabelConfig, data: LabelData): LabelLayout {
   if (cfg.showDividers) {
     const t = clamp(cfg.dividerThicknessMm, 0.15, 2);
     if (cfg.showRack && (cfg.showColumnBar || cfg.showShelf)) {
-      const rightBoxes = [cfg.showColumnBar ? columnBar : null, cfg.showShelf ? shelfRow : null].filter((b): b is typeof columnBar => b !== null);
+      const rightBoxes: Box[] = [];
+      if (cfg.showColumnBar) rightBoxes.push(columnBar);
+      if (cfg.showShelf) rightBoxes.push(shelfRow);
       const rightLeft = Math.min(...rightBoxes.map((b) => b.x));
       const x = clamp((rack.x + rack.w + rightLeft) / 2 - t / 2, 0, W - t);
       const top = Math.min(rack.y, ...rightBoxes.map((b) => b.y));
@@ -173,7 +175,10 @@ export function computeLayout(cfg: LabelConfig, data: LabelData): LabelLayout {
       if (rightLeft >= rack.x + rack.w) dividers.push({ x, y: top, w: t, h: Math.max(t, bottom - top) });
     }
     if (cfg.showBarcode) {
-      const topBoxes = [cfg.showRack ? rack : null, cfg.showColumnBar ? columnBar : null, cfg.showShelf ? shelfRow : null].filter((b): b is Box => b !== null);
+      const topBoxes: Box[] = [];
+      if (cfg.showRack) topBoxes.push(rack);
+      if (cfg.showColumnBar) topBoxes.push(columnBar);
+      if (cfg.showShelf) topBoxes.push(shelfRow);
       if (topBoxes.length) {
         const topBottom = Math.max(...topBoxes.map((b) => b.y + b.h));
         if (barcode.y >= topBottom) {
