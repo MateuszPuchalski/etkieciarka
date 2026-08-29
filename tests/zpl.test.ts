@@ -49,12 +49,17 @@ describe('zplForLabel', () => {
 
   it('transliteruje polskie znaki w trybie zgodności', () => {
     const z = zplForLabel(DATA, { ...DEFAULT_CONFIG, asciiFallback: true });
-    expect(z).toContain('^FDPolka^FS');
-    expect(z).not.toContain('Półka');
+    expect(z).toContain('^FDPOLKA^FS');
+    expect(z).not.toContain('PÓŁKA');
   });
 
-  it('domyślnie zostawia UTF-8 („Półka")', () => {
-    expect(zpl).toContain('^FDPółka^FS');
+  it('domyślnie zostawia UTF-8 („PÓŁKA")', () => {
+    expect(zpl).toContain('^FDPÓŁKA^FS');
+  });
+
+  it('domyślny wzorzec ma pogrubiony podpis pod kodem', () => {
+    const occurrences = zpl.match(/\^FDC03-06-03\^FS/g) ?? [];
+    expect(occurrences.length).toBeGreaterThanOrEqual(3);
   });
 
   it('kalibracja drukarki przesuwa pola bez zmiany ^PW/^LL', () => {

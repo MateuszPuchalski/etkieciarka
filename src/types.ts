@@ -125,23 +125,27 @@ export const SIZE_PRESETS: SizePreset[] = [
   { name: '40 × 30 mm', widthMm: 40, heightMm: 30 },
 ];
 
+/**
+ * Domyślny układ 80 × 50 mm odwzorowuje fizyczną etykietę magazynową:
+ * duży regał po lewej, KOLUMNA/PÓŁKA po prawej i szeroki barcode na dole.
+ */
 export const DEFAULT_CONFIG: LabelConfig = {
   widthMm: 80,
   heightMm: 50,
   dpi: 203,
 
-  marginTopMm: 3,
-  marginRightMm: 3,
-  marginBottomMm: 3,
-  marginLeftMm: 3,
-  sectionGapMm: 2,
-  rackWidthPercent: 42,
-  rowGapMm: 3,
-  dividerThicknessMm: 0.4,
+  marginTopMm: 0.7,
+  marginRightMm: 0.5,
+  marginBottomMm: 1.2,
+  marginLeftMm: 0.5,
+  sectionGapMm: 0.5,
+  rackWidthPercent: 49,
+  rowGapMm: 1.2,
+  dividerThicknessMm: 0.35,
 
   showRack: true,
   lockRack: false,
-  rackFontScale: 1,
+  rackFontScale: 0.95,
   rackAlign: 'center',
   rackOffsetX: 0,
   rackOffsetY: 0,
@@ -162,8 +166,8 @@ export const DEFAULT_CONFIG: LabelConfig = {
   shelfWidthMm: 0,
   shelfHeightMm: 0,
 
-  headerFontScale: 1,
-  valueFontScale: 1,
+  headerFontScale: 0.86,
+  valueFontScale: 1.12,
   rightRowHeightPercent: 44,
   showDividers: true,
   rightOffsetX: 0,
@@ -172,22 +176,22 @@ export const DEFAULT_CONFIG: LabelConfig = {
   showBarcode: true,
   lockBarcode: false,
   barcodeHeightMm: 12,
-  barcodeWidthPercent: 100,
+  barcodeWidthPercent: 70,
   barcodeWidthMm: 0,
   barcodeOffsetX: 0,
   barcodeOffsetY: 0,
 
   showBarcodeText: true,
   lockBarcodeText: false,
-  barcodeTextFontScale: 1,
-  barcodeTextBold: false,
+  barcodeTextFontScale: 1.15,
+  barcodeTextBold: true,
   barcodeTextOffsetX: 0,
   barcodeTextOffsetY: 0,
   barcodeTextWidthMm: 0,
   barcodeTextHeightMm: 0,
 
   columnLabel: 'KOLUMNA',
-  shelfLabel: 'Półka',
+  shelfLabel: 'PÓŁKA',
   codeTemplate: '{regal}-{kolumna}-{polka}',
   asciiFallback: false,
 
@@ -199,7 +203,7 @@ export const DEFAULT_CONFIG: LabelConfig = {
 
 export const DEFAULT_STATE: AppState = {
   config: DEFAULT_CONFIG,
-  single: { rack: 'C03', column: '06', shelf: '03' },
-  batch: { racks: 'C03', colFrom: 1, colTo: 6, shelfFrom: 1, shelfTo: 4, pad: 2 },
+  single: { rack: 'A10', column: '06', shelf: '03' },
+  batch: { racks: 'A10', colFrom: 1, colTo: 6, shelfFrom: 1, shelfTo: 4, pad: 2 },
   tab: 'single',
 };

@@ -60,8 +60,8 @@ describe('computeLayout', () => {
   });
 
   it('kompensuje stopień pisma dla nagłówka z małymi literami', () => {
-    const L = computeLayout(DEFAULT_CONFIG, DATA);
-    expect(L.shelfRow.labelFontMm).toBeCloseTo(L.columnBar.labelFontMm * 1.32, 5);
+    const mixed = computeLayout({ ...DEFAULT_CONFIG, shelfLabel: 'Półka' }, DATA);
+    expect(mixed.shelfRow.labelFontMm).toBeCloseTo(mixed.columnBar.labelFontMm * 1.32, 5);
     const caps = computeLayout({ ...DEFAULT_CONFIG, shelfLabel: 'PÓŁKA' }, DATA);
     expect(caps.shelfRow.labelFontMm).toBeCloseTo(caps.columnBar.labelFontMm, 5);
   });
