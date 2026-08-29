@@ -2,12 +2,22 @@ import { describe, expect, it } from 'vitest';
 import { expandBatch, MAX_BATCH } from '../src/lib/batch';
 
 describe('expandBatch', () => {
-  it('generuje wszystkie kombinacje w kolejności kolumny → półki', () => {
+  it('domyślnie generuje serię półka → kolumny', () => {
     const out = expandBatch({ racks: 'C03', colFrom: 1, colTo: 2, shelfFrom: 1, shelfTo: 3, pad: 2 });
     expect(out).toHaveLength(6);
     expect(out[0]).toEqual({ rack: 'C03', column: '01', shelf: '01' });
-    expect(out[2]).toEqual({ rack: 'C03', column: '01', shelf: '03' });
+    expect(out[1]).toEqual({ rack: 'C03', column: '02', shelf: '01' });
+    expect(out[2]).toEqual({ rack: 'C03', column: '01', shelf: '02' });
     expect(out[5]).toEqual({ rack: 'C03', column: '02', shelf: '03' });
+  });
+
+  it('pozwala przełączyć na kolejność kolumna → półki', () => {
+    const out = expandBatch({
+      racks: 'C03', colFrom: 1, colTo: 2, shelfFrom: 1, shelfTo: 3, pad: 2, order: 'column-first',
+    });
+    expect(out[0]).toEqual({ rack: 'C03', column: '01', shelf: '01' });
+    expect(out[2]).toEqual({ rack: 'C03', column: '01', shelf: '03' });
+    expect(out[3]).toEqual({ rack: 'C03', column: '02', shelf: '01' });
   });
 
   it('obsługuje wiele regałów po przecinku', () => {

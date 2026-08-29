@@ -6,6 +6,7 @@ export interface LabelData {
 }
 
 export type HorizontalAlign = 'left' | 'center' | 'right';
+export type BatchOrder = 'shelf-first' | 'column-first';
 
 export interface LabelConfig {
   widthMm: number;
@@ -29,60 +30,54 @@ export interface LabelConfig {
   rackAlign: HorizontalAlign;
   rackOffsetX: number;
   rackOffsetY: number;
-  rackWidthMm: number; // 0 = auto
-  rackHeightMm: number; // 0 = auto
+  rackWidthMm: number;
+  rackHeightMm: number;
 
   // Kolumna
   showColumnBar: boolean;
   lockColumn: boolean;
   columnOffsetX: number;
   columnOffsetY: number;
-  columnWidthMm: number; // 0 = auto
-  columnHeightMm: number; // 0 = auto
+  columnWidthMm: number;
+  columnHeightMm: number;
 
   // Półka
   showShelf: boolean;
   lockShelf: boolean;
   shelfOffsetX: number;
   shelfOffsetY: number;
-  shelfWidthMm: number; // 0 = auto
-  shelfHeightMm: number; // 0 = auto
+  shelfWidthMm: number;
+  shelfHeightMm: number;
 
-  // Teksty kolumny / półki
   headerFontScale: number;
   valueFontScale: number;
   rightRowHeightPercent: number;
   showDividers: boolean;
-
-  // Pola legacy pozostawione dla zgodności starszych zapisów localStorage.
   rightOffsetX: number;
   rightOffsetY: number;
 
-  // Kod kreskowy
   showBarcode: boolean;
   lockBarcode: boolean;
   barcodeHeightMm: number;
   barcodeWidthPercent: number;
-  barcodeWidthMm: number; // 0 = auto / barcodeWidthPercent
+  barcodeWidthMm: number;
   barcodeOffsetX: number;
   barcodeOffsetY: number;
 
-  // Tekst pod kodem
   showBarcodeText: boolean;
   lockBarcodeText: boolean;
   barcodeTextFontScale: number;
   barcodeTextBold: boolean;
   barcodeTextOffsetX: number;
   barcodeTextOffsetY: number;
-  barcodeTextWidthMm: number; // 0 = auto
-  barcodeTextHeightMm: number; // 0 = auto
+  barcodeTextWidthMm: number;
+  barcodeTextHeightMm: number;
 
   columnLabel: string;
   shelfLabel: string;
   codeTemplate: string;
   asciiFallback: boolean;
 
-  // Kalibracja fizycznego wydruku. Nie wpływa na projekt/canvas.
   printOffsetXmm: number;
   printOffsetYmm: number;
   printScaleXPercent: number;
@@ -96,6 +91,8 @@ export interface BatchSpec {
   shelfFrom: number;
   shelfTo: number;
   pad: number;
+  /** Starsze zapisy bez pola są traktowane jako shelf-first. */
+  order?: BatchOrder;
 }
 
 export type Tab = 'single' | 'batch';
@@ -125,10 +122,6 @@ export const SIZE_PRESETS: SizePreset[] = [
   { name: '40 × 30 mm', widthMm: 40, heightMm: 30 },
 ];
 
-/**
- * Domyślny układ 80 × 50 mm odwzorowuje fizyczną etykietę magazynową:
- * duży regał po lewej, KOLUMNA/PÓŁKA po prawej i szeroki barcode na dole.
- */
 export const DEFAULT_CONFIG: LabelConfig = {
   widthMm: 80,
   heightMm: 50,
@@ -140,7 +133,7 @@ export const DEFAULT_CONFIG: LabelConfig = {
   marginLeftMm: 0.5,
   sectionGapMm: 0.5,
   rackWidthPercent: 49,
-  rowGapMm: 1.2,
+  rowGapMm: 0.6,
   dividerThicknessMm: 0.35,
 
   showRack: true,
@@ -168,7 +161,7 @@ export const DEFAULT_CONFIG: LabelConfig = {
 
   headerFontScale: 0.86,
   valueFontScale: 1.12,
-  rightRowHeightPercent: 44,
+  rightRowHeightPercent: 49,
   showDividers: true,
   rightOffsetX: 0,
   rightOffsetY: 0,
@@ -204,6 +197,6 @@ export const DEFAULT_CONFIG: LabelConfig = {
 export const DEFAULT_STATE: AppState = {
   config: DEFAULT_CONFIG,
   single: { rack: 'A10', column: '06', shelf: '03' },
-  batch: { racks: 'A10', colFrom: 1, colTo: 6, shelfFrom: 1, shelfTo: 4, pad: 2 },
+  batch: { racks: 'A10', colFrom: 1, colTo: 6, shelfFrom: 1, shelfTo: 4, pad: 2, order: 'shelf-first' },
   tab: 'single',
 };

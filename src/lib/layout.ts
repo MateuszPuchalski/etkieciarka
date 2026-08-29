@@ -16,9 +16,20 @@ export interface Box {
   h: number;
 }
 
+export interface LabelSections {
+  rack: Box;
+  right: Box;
+  bottom: Box;
+  columnSlot: Box;
+  shelfSlot: Box;
+  barcodeSlot: Box;
+  barcodeTextSlot: Box;
+}
+
 export interface LabelLayout {
   inset: number;
   dividers: Box[];
+  sections: LabelSections;
   rack: Box & { fontMm: number };
   columnBar: Box & { labelFontMm: number; valueFontMm: number };
   shelfRow: Box & { labelFontMm: number; valueFontMm: number };
@@ -30,11 +41,37 @@ function sized(value: number, fallback: number, max: number, min = 1): number {
   return clamp(value > 0 ? value : fallback, min, Math.max(min, max));
 }
 
-function place<T extends Box>(box: T, dx: number, dy: number, W: number, H: number): T {
+const SNAP_MM = 1.1;
+
+function placeInSection<T extends Box>(box: T, dx: number, dy: number, section: Box): T {
+  const maxX = section.x + Math.max(0, section.w - box.w);
+  const maxY = section.y + Math.max(0, section.h - box.h);
+  let x = clamp(box.x + dx, section.x, maxX);
+  let y = clamp(box.y + dy, section.y, maxY);
+
+  const sectionCx = section.x + section.w / 2;
+  const sectionCy = section.y + section.h / 2;
+
+  const candidatesX = [
+    { delta: section.x - x },
+    { delta: sectionCx - (x + box.w / 2) },
+    { delta: section.x + section.w - (x + box.w) },
+  ];
+  const bestX = candidatesX.reduce((a, b) => Math.abs(b.delta) < Math.abs(a.delta) ? b : a);
+  if (Math.abs(bestX.delta) <= SNAP_MM) x += bestX.delta;
+
+  const candidatesY = [
+    { delta: section.y - y },
+    { delta: sectionCy - (y + box.h / 2) },
+    { delta: section.y + section.h - (y + box.h) },
+  ];
+  const bestY = candidatesY.reduce((a, b) => Math.abs(b.delta) < Math.abs(a.delta) ? b : a);
+  if (Math.abs(bestY.delta) <= SNAP_MM) y += bestY.delta;
+
   return {
     ...box,
-    x: clamp(box.x + dx, 0, Math.max(0, W - box.w)),
-    y: clamp(box.y + dy, 0, Math.max(0, H - box.h)),
+    x: clamp(x, section.x, maxX),
+    y: clamp(y, section.y, maxY),
   };
 }
 
@@ -54,47 +91,81 @@ export function computeLayout(cfg: LabelConfig, data: LabelData): LabelLayout {
   const autoTextFont = textFontBase * cfg.barcodeTextFontScale;
   const autoTextH = cfg.showBarcodeText ? autoTextFont * 1.3 : 0;
   const autoBcH = cfg.showBarcode ? clamp(cfg.barcodeHeightMm, 4, innerH * 0.42) : 0;
-  const gapB = autoBcH + autoTextH > 0 ? Math.max(0.5, Math.min(innerW, innerH) * 0.018) : 0;
+  const barcodeTextGap = cfg.showBarcode && cfg.showBarcodeText ? 0.6 : 0;
+  const bottomContentH = autoBcH + autoTextH + barcodeTextGap;
+  const sectionGapY = bottomContentH > 0 ? Math.max(0.5, Math.min(innerW, innerH) * 0.018) : 0;
   const topY = marginTop;
-  const topH = Math.max(4, innerH - autoBcH - autoTextH - gapB);
+  const topH = Math.max(4, innerH - bottomContentH - sectionGapY);
+  const bottomY = topY + topH + sectionGapY;
+  const bottomH = Math.max(1, H - marginBottom - bottomY);
 
   const hasRight = cfg.showColumnBar || cfg.showShelf;
   const hasRack = cfg.showRack;
   const gapMid = hasRight && hasRack ? clamp(cfg.sectionGapMm, 0, innerW * 0.2) : 0;
   const availableTopW = Math.max(1, innerW - gapMid);
-  const autoRackW = hasRack ? (hasRight ? availableTopW * clamp(cfg.rackWidthPercent, 10, 90) / 100 : innerW) : 0;
-  const autoRightW = hasRight ? (hasRack ? availableTopW - autoRackW : innerW) : 0;
-  const autoRowH = topH * clamp(cfg.rightRowHeightPercent, 20, 50) / 100;
-  const configuredRowGap = clamp(cfg.rowGapMm, 0, topH * 0.4);
-  const rowGap = cfg.showColumnBar && cfg.showShelf
-    ? Math.min(configuredRowGap, Math.max(0, topH - 2 * autoRowH))
-    : 0;
-  const rightX = hasRack ? marginLeft + autoRackW + gapMid : marginLeft;
-  const shelfY = cfg.showColumnBar ? topY + autoRowH + rowGap : topY;
+  const rackSectionW = hasRack ? (hasRight ? availableTopW * clamp(cfg.rackWidthPercent, 10, 90) / 100 : innerW) : 0;
+  const rightSectionW = hasRight ? (hasRack ? availableTopW - rackSectionW : innerW) : 0;
+  const rightX = hasRack ? marginLeft + rackSectionW + gapMid : marginLeft;
 
-  const rackW = hasRack ? sized(cfg.rackWidthMm, autoRackW, W, 2) : 0;
-  const rackH = hasRack ? sized(cfg.rackHeightMm, topH, H, 2) : 0;
+  const rackSection: Box = { x: marginLeft, y: topY, w: rackSectionW, h: topH };
+  const rightSection: Box = { x: rightX, y: topY, w: rightSectionW, h: topH };
+  const bottomSection: Box = { x: marginLeft, y: bottomY, w: innerW, h: bottomH };
+
+  const configuredRowGap = cfg.showColumnBar && cfg.showShelf ? clamp(cfg.rowGapMm, 0, topH * 0.25) : 0;
+  const rowGap = Math.min(configuredRowGap, Math.max(0, topH - 4));
+  const sharedRowH = cfg.showColumnBar && cfg.showShelf
+    ? Math.max(2, (topH - rowGap) / 2)
+    : topH;
+  const columnSlot: Box = { x: rightSection.x, y: rightSection.y, w: rightSection.w, h: sharedRowH };
+  const shelfSlot: Box = {
+    x: rightSection.x,
+    y: cfg.showColumnBar ? rightSection.y + sharedRowH + rowGap : rightSection.y,
+    w: rightSection.w,
+    h: cfg.showColumnBar && cfg.showShelf ? sharedRowH : topH,
+  };
+
+  const barcodeSlotH = cfg.showBarcode ? Math.min(autoBcH, bottomSection.h) : 0;
+  const barcodeSlot: Box = { x: bottomSection.x, y: bottomSection.y, w: bottomSection.w, h: barcodeSlotH };
+  const barcodeTextSlotY = bottomSection.y + barcodeSlotH + barcodeTextGap;
+  const barcodeTextSlot: Box = {
+    x: bottomSection.x,
+    y: barcodeTextSlotY,
+    w: bottomSection.w,
+    h: Math.max(1, bottomSection.y + bottomSection.h - barcodeTextSlotY),
+  };
+
+  const sections: LabelSections = {
+    rack: rackSection,
+    right: rightSection,
+    bottom: bottomSection,
+    columnSlot,
+    shelfSlot,
+    barcodeSlot,
+    barcodeTextSlot,
+  };
+
+  const rackW = hasRack ? sized(cfg.rackWidthMm, rackSection.w, rackSection.w, 2) : 0;
+  const rackH = hasRack ? sized(cfg.rackHeightMm, rackSection.h, rackSection.h, 2) : 0;
   const rackLen = Math.max(2, data.rack.length);
   const rackFont = hasRack
     ? Math.min(rackH * 0.75, Math.max(1, rackW) / (rackLen * 0.55)) * cfg.rackFontScale
     : 0;
-  const rack = place(
-    { x: marginLeft, y: topY, w: rackW, h: rackH, fontMm: rackFont },
+  const rack = placeInSection(
+    { x: rackSection.x, y: rackSection.y, w: rackW, h: rackH, fontMm: rackFont },
     cfg.rackOffsetX,
     cfg.rackOffsetY,
-    W,
-    H,
+    rackSection,
   );
 
-  const columnW = cfg.showColumnBar ? sized(cfg.columnWidthMm, autoRightW, W, 2) : 0;
-  const columnH = cfg.showColumnBar ? sized(cfg.columnHeightMm, autoRowH, H, 2) : 0;
+  const columnW = cfg.showColumnBar ? sized(cfg.columnWidthMm, columnSlot.w, columnSlot.w, 2) : 0;
+  const columnH = cfg.showColumnBar ? sized(cfg.columnHeightMm, columnSlot.h, columnSlot.h, 2) : 0;
   const columnLabelBase = columnH * 0.42 * cfg.headerFontScale;
   const columnValueFont = columnH * 0.66 * cfg.valueFontScale;
   const caseComp = (s: string) => (/\p{Ll}/u.test(s) ? 1.32 : 1);
-  const columnBar = place(
+  const columnBar = placeInSection(
     {
-      x: rightX,
-      y: topY,
+      x: columnSlot.x,
+      y: columnSlot.y,
       w: columnW,
       h: columnH,
       labelFontMm: columnLabelBase * caseComp(cfg.columnLabel),
@@ -102,18 +173,17 @@ export function computeLayout(cfg: LabelConfig, data: LabelData): LabelLayout {
     },
     cfg.columnOffsetX,
     cfg.columnOffsetY,
-    W,
-    H,
+    columnSlot,
   );
 
-  const shelfW = cfg.showShelf ? sized(cfg.shelfWidthMm, autoRightW, W, 2) : 0;
-  const shelfH = cfg.showShelf ? sized(cfg.shelfHeightMm, autoRowH, H, 2) : 0;
+  const shelfW = cfg.showShelf ? sized(cfg.shelfWidthMm, shelfSlot.w, shelfSlot.w, 2) : 0;
+  const shelfH = cfg.showShelf ? sized(cfg.shelfHeightMm, shelfSlot.h, shelfSlot.h, 2) : 0;
   const shelfLabelBase = shelfH * 0.42 * cfg.headerFontScale;
   const shelfValueFont = shelfH * 0.66 * cfg.valueFontScale;
-  const shelfRow = place(
+  const shelfRow = placeInSection(
     {
-      x: rightX,
-      y: shelfY,
+      x: shelfSlot.x,
+      y: shelfSlot.y,
       w: shelfW,
       h: shelfH,
       labelFontMm: shelfLabelBase * caseComp(cfg.shelfLabel),
@@ -121,35 +191,39 @@ export function computeLayout(cfg: LabelConfig, data: LabelData): LabelLayout {
     },
     cfg.shelfOffsetX,
     cfg.shelfOffsetY,
-    W,
-    H,
+    shelfSlot,
   );
 
   const code = renderCode(cfg.codeTemplate, data);
   const modules = Math.max(1, code128Modules(code));
-  const autoBarcodeAreaW = innerW * clamp(cfg.barcodeWidthPercent, 20, 100) / 100;
-  const barcodeAreaW = sized(cfg.barcodeWidthMm, autoBarcodeAreaW, W, 4);
+  const autoBarcodeAreaW = bottomSection.w * clamp(cfg.barcodeWidthPercent, 20, 100) / 100;
+  const barcodeAreaW = sized(cfg.barcodeWidthMm, autoBarcodeAreaW, bottomSection.w, 4);
   const moduleDots = clamp(Math.floor(mmToDots(barcodeAreaW, cfg.dpi) / modules), 1, 10);
   const dotMm = 25.4 / cfg.dpi;
   const naturalBcW = modules * moduleDots * dotMm;
   const bcW = Math.min(barcodeAreaW, naturalBcW);
-  const bcH = cfg.showBarcode ? sized(cfg.barcodeHeightMm, autoBcH, H, 4) : 0;
-  const bcY = topY + topH + gapB;
-  const barcode = place(
-    { x: marginLeft + (innerW - bcW) / 2, y: bcY, w: bcW, h: bcH, moduleDots, code },
+  const bcH = cfg.showBarcode ? sized(cfg.barcodeHeightMm, barcodeSlot.h, barcodeSlot.h, 4) : 0;
+  const barcode = placeInSection(
+    {
+      x: bottomSection.x + (bottomSection.w - bcW) / 2,
+      y: barcodeSlot.y,
+      w: bcW,
+      h: bcH,
+      moduleDots,
+      code,
+    },
     cfg.barcodeOffsetX,
     cfg.barcodeOffsetY,
-    W,
-    H,
+    barcodeSlot,
   );
 
-  const textW = cfg.showBarcodeText ? sized(cfg.barcodeTextWidthMm, innerW, W, 2) : 0;
-  const textH = cfg.showBarcodeText ? sized(cfg.barcodeTextHeightMm, autoTextH, H, 1) : 0;
+  const textW = cfg.showBarcodeText ? sized(cfg.barcodeTextWidthMm, barcodeTextSlot.w, barcodeTextSlot.w, 2) : 0;
+  const textH = cfg.showBarcodeText ? sized(cfg.barcodeTextHeightMm, autoTextH, barcodeTextSlot.h, 1) : 0;
   const textFont = Math.min(textH * 0.8, autoTextFont);
-  const barcodeText = place(
+  const barcodeText = placeInSection(
     {
-      x: marginLeft + (innerW - textW) / 2,
-      y: bcY + bcH + (cfg.showBarcode ? 0.6 : 0),
+      x: barcodeTextSlot.x + (barcodeTextSlot.w - textW) / 2,
+      y: barcodeTextSlot.y,
       w: textW,
       h: textH,
       fontMm: textFont,
@@ -157,37 +231,29 @@ export function computeLayout(cfg: LabelConfig, data: LabelData): LabelLayout {
     },
     cfg.barcodeTextOffsetX,
     cfg.barcodeTextOffsetY,
-    W,
-    H,
+    barcodeTextSlot,
   );
 
   const dividers: Box[] = [];
   if (cfg.showDividers) {
     const t = clamp(cfg.dividerThicknessMm, 0.15, 2);
-    if (cfg.showRack && (cfg.showColumnBar || cfg.showShelf)) {
-      const rightBoxes: Box[] = [];
-      if (cfg.showColumnBar) rightBoxes.push(columnBar);
-      if (cfg.showShelf) rightBoxes.push(shelfRow);
-      const rightLeft = Math.min(...rightBoxes.map((b) => b.x));
-      const x = clamp((rack.x + rack.w + rightLeft) / 2 - t / 2, 0, W - t);
-      const top = Math.min(rack.y, ...rightBoxes.map((b) => b.y));
-      const bottom = Math.max(rack.y + rack.h, ...rightBoxes.map((b) => b.y + b.h));
-      if (rightLeft >= rack.x + rack.w) dividers.push({ x, y: top, w: t, h: Math.max(t, bottom - top) });
+    if (hasRack && hasRight) {
+      dividers.push({
+        x: rackSection.x + rackSection.w + gapMid / 2 - t / 2,
+        y: topY,
+        w: t,
+        h: topH,
+      });
     }
-    if (cfg.showBarcode) {
-      const topBoxes: Box[] = [];
-      if (cfg.showRack) topBoxes.push(rack);
-      if (cfg.showColumnBar) topBoxes.push(columnBar);
-      if (cfg.showShelf) topBoxes.push(shelfRow);
-      if (topBoxes.length) {
-        const topBottom = Math.max(...topBoxes.map((b) => b.y + b.h));
-        if (barcode.y >= topBottom) {
-          const y = clamp((topBottom + barcode.y) / 2 - t / 2, 0, H - t);
-          dividers.push({ x: marginLeft, y, w: innerW, h: t });
-        }
-      }
+    if (bottomContentH > 0) {
+      dividers.push({
+        x: marginLeft,
+        y: topY + topH + sectionGapY / 2 - t / 2,
+        w: innerW,
+        h: t,
+      });
     }
   }
 
-  return { inset, dividers, rack, columnBar, shelfRow, barcode, barcodeText };
+  return { inset, dividers, sections, rack, columnBar, shelfRow, barcode, barcodeText };
 }
