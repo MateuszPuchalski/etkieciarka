@@ -80,10 +80,10 @@ describe('computeLayout', () => {
 
   it('pozwala przesuwać kolumnę i półkę niezależnie', () => {
     const base = computeLayout(DEFAULT_CONFIG, DATA);
-    const moved = computeLayout({ ...DEFAULT_CONFIG, columnOffsetX: 4, shelfOffsetY: 3 }, DATA);
-    expect(moved.columnBar.x).toBeCloseTo(base.columnBar.x + 4, 5);
+    const moved = computeLayout({ ...DEFAULT_CONFIG, columnOffsetX: -2, shelfOffsetY: 2 }, DATA);
+    expect(moved.columnBar.x).toBeCloseTo(base.columnBar.x - 2, 5);
     expect(moved.columnBar.y).toBeCloseTo(base.columnBar.y, 5);
-    expect(moved.shelfRow.y).toBeCloseTo(base.shelfRow.y + 3, 5);
+    expect(moved.shelfRow.y).toBeCloseTo(base.shelfRow.y + 2, 5);
     expect(moved.shelfRow.x).toBeCloseTo(base.shelfRow.x, 5);
   });
 
