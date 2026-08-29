@@ -43,19 +43,6 @@ function sized(value: number, fallback: number, max: number, min = 1): number {
 
 const SNAP_MM = 1.1;
 
-function snapValue(value: number, targets: number[], threshold = SNAP_MM): number {
-  let best = value;
-  let distance = threshold + 0.001;
-  for (const target of targets) {
-    const d = Math.abs(value - target);
-    if (d <= threshold && d < distance) {
-      best = target;
-      distance = d;
-    }
-  }
-  return best;
-}
-
 function placeInSection<T extends Box>(box: T, dx: number, dy: number, section: Box): T {
   const maxX = section.x + Math.max(0, section.w - box.w);
   const maxY = section.y + Math.max(0, section.h - box.h);
