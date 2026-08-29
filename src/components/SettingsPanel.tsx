@@ -87,12 +87,16 @@ export function SettingsPanel({
         <label><input type="checkbox" checked={config.showDividers} onChange={(e) => onChange({ showDividers: e.target.checked })} />Linie podziału</label>
       </div>
 
+      <h3>Marginesy etykiety</h3>
+      <div className="field-grid">
+        <label>Góra [mm]<input type="number" min={0} max={30} step={0.5} value={config.marginTopMm} onChange={numInput('marginTopMm', 0, 30)} /></label>
+        <label>Prawo [mm]<input type="number" min={0} max={30} step={0.5} value={config.marginRightMm} onChange={numInput('marginRightMm', 0, 30)} /></label>
+        <label>Dół [mm]<input type="number" min={0} max={30} step={0.5} value={config.marginBottomMm} onChange={numInput('marginBottomMm', 0, 30)} /></label>
+        <label>Lewo [mm]<input type="number" min={0} max={30} step={0.5} value={config.marginLeftMm} onChange={numInput('marginLeftMm', 0, 30)} /></label>
+      </div>
+
       <h3>Geometria etykiety</h3>
       <div className="field-grid">
-        <label>
-          Margines wewnętrzny [mm]
-          <input type="number" min={0} max={15} step={0.5} value={config.contentPaddingMm} onChange={numInput('contentPaddingMm', 0, 15)} />
-        </label>
         <label>
           Odstęp między sekcjami [mm]
           <input type="number" min={0} max={20} step={0.5} value={config.sectionGapMm} onChange={numInput('sectionGapMm', 0, 20)} />
@@ -122,6 +126,12 @@ export function SettingsPanel({
             <option value="center">Środek</option>
             <option value="right">Do prawej</option>
           </select>
+        </label>
+      </div>
+      <div className="checkbox-row">
+        <label>
+          <input type="checkbox" checked={config.barcodeTextBold} onChange={(e) => onChange({ barcodeTextBold: e.target.checked })} />
+          Pogrub tekst pod kodem
         </label>
       </div>
 

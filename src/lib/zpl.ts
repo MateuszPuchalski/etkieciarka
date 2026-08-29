@@ -77,7 +77,14 @@ export function zplForLabel(data: LabelData, cfg: LabelConfig): string {
   if (cfg.showBarcodeText && L.barcodeText.text) {
     const t = L.barcodeText;
     const tf = d(t.fontMm);
-    z.push(`^FO${d(t.x)},${d(t.y)}^A0N,${tf},${tf}^FB${d(t.w)},1,0,C^FD${fd(t.text, a)}^FS`);
+    const x = d(t.x);
+    const y = d(t.y);
+    const width = d(t.w);
+    const field = `^A0N,${tf},${tf}^FB${width},1,0,C^FD${fd(t.text, a)}^FS`;
+    z.push(`^FO${x},${y}${field}`);
+    // Font 0 w ZPL nie ma osobnego wariantu bold. Drugi wydruk przesunięty o 1 dot
+    // daje efekt pogrubienia zbliżony do podglądu SVG.
+    if (cfg.barcodeTextBold) z.push(`^FO${x + 1},${y}${field}`);
   }
 
   z.push('^XZ');
