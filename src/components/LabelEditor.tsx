@@ -56,7 +56,6 @@ export function LabelEditor({ data, config, onDataChange, onConfigChange }: {
     restore(next);
   };
   const changeConfig = (c: Partial<LabelConfig>) => { checkpoint(); onConfigChange(c); };
-  const changeData = (d: LabelData) => { checkpoint(); onDataChange(d); };
 
   const mmDelta = (dx: number, dy: number) => {
     const rect = svgRef.current?.getBoundingClientRect();
