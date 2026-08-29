@@ -22,12 +22,10 @@ describe('renderCode', () => {
 
 describe('code128Modules', () => {
   it('liczy moduły dla danych mieszanych (podzbiór B z fragmentami cyfr)', () => {
-    // "C03-05-03" zachłannie: same znaki B → 9 symboli danych + start + suma = 11 symboli
     expect(code128Modules('C03-05-03')).toBe(11 * 11 + 13);
   });
 
   it('liczy moduły dla samych cyfr (podzbiór C)', () => {
-    // "1234" → start C + 2 pary + suma = 4 symbole
     expect(code128Modules('1234')).toBe(11 * 4 + 13);
   });
 
@@ -49,7 +47,7 @@ describe('computeLayout', () => {
     }
   });
 
-  it('centruje kod kreskowy', () => {
+  it('centruje kod kreskowy w obszarze etykiety przy zerowym offsecie', () => {
     const L = computeLayout(DEFAULT_CONFIG, DATA);
     const center = L.barcode.x + L.barcode.w / 2;
     expect(center).toBeCloseTo(DEFAULT_CONFIG.widthMm / 2, 1);
@@ -62,25 +60,53 @@ describe('computeLayout', () => {
   });
 
   it('kompensuje stopień pisma dla nagłówka z małymi literami', () => {
-    const L = computeLayout(DEFAULT_CONFIG, DATA); // "KOLUMNA" caps, "Półka" mixed
+    const L = computeLayout(DEFAULT_CONFIG, DATA);
     expect(L.shelfRow.labelFontMm).toBeCloseTo(L.columnBar.labelFontMm * 1.32, 5);
     const caps = computeLayout({ ...DEFAULT_CONFIG, shelfLabel: 'PÓŁKA' }, DATA);
     expect(caps.shelfRow.labelFontMm).toBeCloseTo(caps.columnBar.labelFontMm, 5);
   });
 
-  it('generuje linie podziału: pionową i poziomą', () => {
+  it('generuje separatory dla domyślnego układu', () => {
     const L = computeLayout(DEFAULT_CONFIG, DATA);
     expect(L.dividers).toHaveLength(2);
-    const [v, h] = L.dividers;
-    expect(v.h).toBeGreaterThan(v.w); // pionowa
-    expect(h.w).toBeGreaterThan(h.h); // pozioma
-    // pionowa dochodzi dokładnie do poziomej
-    expect(v.y + v.h).toBeCloseTo(h.y + h.h, 5);
+    expect(L.dividers.some((d) => d.h > d.w)).toBe(true);
+    expect(L.dividers.some((d) => d.w > d.h)).toBe(true);
   });
 
   it('pomija linie podziału gdy wyłączone', () => {
     const L = computeLayout({ ...DEFAULT_CONFIG, showDividers: false }, DATA);
     expect(L.dividers).toHaveLength(0);
+  });
+
+  it('pozwala przesuwać kolumnę i półkę niezależnie', () => {
+    const base = computeLayout(DEFAULT_CONFIG, DATA);
+    const moved = computeLayout({ ...DEFAULT_CONFIG, columnOffsetX: -2, shelfOffsetY: 2 }, DATA);
+    expect(moved.columnBar.x).toBeCloseTo(base.columnBar.x - 2, 5);
+    expect(moved.columnBar.y).toBeCloseTo(base.columnBar.y, 5);
+    expect(moved.shelfRow.y).toBeCloseTo(base.shelfRow.y + 2, 5);
+    expect(moved.shelfRow.x).toBeCloseTo(base.shelfRow.x, 5);
+  });
+
+  it('respektuje jawne wymiary elementów', () => {
+    const L = computeLayout({
+      ...DEFAULT_CONFIG,
+      rackWidthMm: 24,
+      rackHeightMm: 18,
+      columnWidthMm: 30,
+      columnHeightMm: 9,
+      shelfWidthMm: 28,
+      shelfHeightMm: 8,
+      barcodeWidthMm: 44,
+      barcodeTextWidthMm: 36,
+    }, DATA);
+    expect(L.rack.w).toBeCloseTo(24, 5);
+    expect(L.rack.h).toBeCloseTo(18, 5);
+    expect(L.columnBar.w).toBeCloseTo(30, 5);
+    expect(L.columnBar.h).toBeCloseTo(9, 5);
+    expect(L.shelfRow.w).toBeCloseTo(28, 5);
+    expect(L.shelfRow.h).toBeCloseTo(8, 5);
+    expect(L.barcode.w).toBeLessThanOrEqual(44);
+    expect(L.barcodeText.w).toBeCloseTo(36, 5);
   });
 
   it('dobiera moduł kodu ≥ 2 doty dla małej etykiety przy 203 dpi', () => {

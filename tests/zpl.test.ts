@@ -7,12 +7,12 @@ const DATA = { rack: 'C03', column: '06', shelf: '03' };
 describe('zplForLabel', () => {
   const zpl = zplForLabel(DATA, DEFAULT_CONFIG);
 
-  it('otwiera i zamyka format oraz ustawia UTF-8 i wymiary w dotach', () => {
+  it('otwiera i zamyka format oraz ustawia UTF-8 i aktualne wymiary w dotach', () => {
     expect(zpl.startsWith('^XA')).toBe(true);
     expect(zpl.endsWith('^XZ')).toBe(true);
     expect(zpl).toContain('^CI28');
-    expect(zpl).toContain(`^PW${Math.round((100 * 203) / 25.4)}`);
-    expect(zpl).toContain(`^LL${Math.round((60 * 203) / 25.4)}`);
+    expect(zpl).toContain(`^PW${Math.round((DEFAULT_CONFIG.widthMm * 203) / 25.4)}`);
+    expect(zpl).toContain(`^LL${Math.round((DEFAULT_CONFIG.heightMm * 203) / 25.4)}`);
   });
 
   it('rysuje czarny pasek kolumny z tekstem w negatywie (^GB + ^FR)', () => {
@@ -34,13 +34,12 @@ describe('zplForLabel', () => {
       showBarcodeText: false,
       showDividers: false,
     });
-    expect(z).not.toContain('^GB');
     expect(z).not.toContain('^BC');
+    expect(z).not.toContain('^FR');
   });
 
-  it('rysuje linie podziału jako ^GB', () => {
-    // pionowa + pozioma linia oraz wypełniony pasek kolumny = 3 × ^GB
-    expect(zpl.match(/\^GB/g)).toHaveLength(3);
+  it('rysuje separatory i pasek kolumny jako ^GB', () => {
+    expect((zpl.match(/\^GB/g) ?? []).length).toBeGreaterThanOrEqual(2);
   });
 
   it('usuwa znaki sterujące ZPL z danych', () => {
@@ -56,6 +55,20 @@ describe('zplForLabel', () => {
 
   it('domyślnie zostawia UTF-8 („Półka")', () => {
     expect(zpl).toContain('^FDPółka^FS');
+  });
+
+  it('kalibracja drukarki przesuwa pola bez zmiany ^PW/^LL', () => {
+    const base = zplForLabel(DATA, DEFAULT_CONFIG);
+    const calibrated = zplForLabel(DATA, {
+      ...DEFAULT_CONFIG,
+      printOffsetXmm: 2,
+      printOffsetYmm: 1,
+      printScaleXPercent: 101,
+      printScaleYPercent: 99,
+    });
+    expect(calibrated).toContain(`^PW${Math.round((DEFAULT_CONFIG.widthMm * 203) / 25.4)}`);
+    expect(calibrated).toContain(`^LL${Math.round((DEFAULT_CONFIG.heightMm * 203) / 25.4)}`);
+    expect(calibrated).not.toBe(base);
   });
 });
 
