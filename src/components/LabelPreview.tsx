@@ -25,6 +25,13 @@ export function LabelPreview({ data, config }: { data: LabelData; config: LabelC
     }
   }, [config.showBarcode, L.barcode.code]);
 
+  const rackAnchor = config.rackAlign === 'center' ? 'middle' : config.rackAlign === 'right' ? 'end' : 'start';
+  const rackX = config.rackAlign === 'center'
+    ? L.rack.x + L.rack.w / 2
+    : config.rackAlign === 'right'
+      ? L.rack.x + L.rack.w
+      : L.rack.x;
+
   return (
     <svg
       className="label-svg"
@@ -39,27 +46,24 @@ export function LabelPreview({ data, config }: { data: LabelData; config: LabelC
         <rect key={i} x={dv.x} y={dv.y} width={dv.w} height={dv.h} fill="#000" />
       ))}
 
-      <text
-        x={L.rack.x}
-        y={L.rack.y + L.rack.h / 2}
-        fontSize={L.rack.fontMm}
-        fontFamily={FONT}
-        fontWeight="bold"
-        fill="#000"
-        dominantBaseline="central"
-      >
-        {data.rack}
-      </text>
+      {config.showRack && (
+        <text
+          x={rackX}
+          y={L.rack.y + L.rack.h / 2}
+          fontSize={L.rack.fontMm}
+          fontFamily={FONT}
+          fontWeight="bold"
+          fill="#000"
+          textAnchor={rackAnchor}
+          dominantBaseline="central"
+        >
+          {data.rack}
+        </text>
+      )}
 
       {config.showColumnBar && (
         <g>
-          <rect
-            x={L.columnBar.x}
-            y={L.columnBar.y}
-            width={L.columnBar.w}
-            height={L.columnBar.h}
-            fill="#000"
-          />
+          <rect x={L.columnBar.x} y={L.columnBar.y} width={L.columnBar.w} height={L.columnBar.h} fill="#000" />
           <text
             x={L.columnBar.x + L.inset}
             y={L.columnBar.y + L.columnBar.h / 2}
