@@ -6,6 +6,7 @@ export interface LabelData {
 }
 
 export type HorizontalAlign = 'left' | 'center' | 'right';
+export type BatchOrder = 'shelf-first' | 'column-first';
 
 export interface LabelConfig {
   widthMm: number;
@@ -96,6 +97,11 @@ export interface BatchSpec {
   shelfFrom: number;
   shelfTo: number;
   pad: number;
+  /**
+   * Kolejność fizycznego drukowania/naklejania.
+   * Brak pola w starszym localStorage jest interpretowany jako shelf-first.
+   */
+  order?: BatchOrder;
 }
 
 export type Tab = 'single' | 'batch';
@@ -204,6 +210,6 @@ export const DEFAULT_CONFIG: LabelConfig = {
 export const DEFAULT_STATE: AppState = {
   config: DEFAULT_CONFIG,
   single: { rack: 'A10', column: '06', shelf: '03' },
-  batch: { racks: 'A10', colFrom: 1, colTo: 6, shelfFrom: 1, shelfTo: 4, pad: 2 },
+  batch: { racks: 'A10', colFrom: 1, colTo: 6, shelfFrom: 1, shelfTo: 4, pad: 2, order: 'shelf-first' },
   tab: 'single',
 };
