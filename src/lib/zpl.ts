@@ -23,7 +23,7 @@ export function zplForLabel(data: LabelData, cfg: LabelConfig): string {
   const a = cfg.asciiFallback;
   const z: string[] = [
     '^XA',
-    '^CI28', // UTF-8 — czcionka 0 na ZD421 (Link-OS) drukuje polskie znaki
+    '^CI28',
     `^PW${d(cfg.widthMm)}`,
     `^LL${d(cfg.heightMm)}`,
     '^LH0,0',
@@ -35,10 +35,13 @@ export function zplForLabel(data: LabelData, cfg: LabelConfig): string {
     z.push(`^FO${d(dv.x)},${d(dv.y)}^GB${w},${h},${Math.min(w, h)}^FS`);
   }
 
-  const rf = d(L.rack.fontMm);
-  z.push(
-    `^FO${d(L.rack.x)},${d(L.rack.y + (L.rack.h - L.rack.fontMm) / 2)}^A0N,${rf},${rf}^FD${fd(data.rack, a)}^FS`,
-  );
+  if (cfg.showRack) {
+    const rf = d(L.rack.fontMm);
+    const align = cfg.rackAlign === 'center' ? 'C' : cfg.rackAlign === 'right' ? 'R' : 'L';
+    z.push(
+      `^FO${d(L.rack.x)},${d(L.rack.y + (L.rack.h - L.rack.fontMm) / 2)}^A0N,${rf},${rf}^FB${d(L.rack.w)},1,0,${align}^FD${fd(data.rack, a)}^FS`,
+    );
+  }
 
   if (cfg.showColumnBar) {
     const b = L.columnBar;
@@ -68,7 +71,6 @@ export function zplForLabel(data: LabelData, cfg: LabelConfig): string {
   if (cfg.showBarcode && L.barcode.code) {
     const b = L.barcode;
     z.push(`^BY${b.moduleDots},2`);
-    // Linia interpretacji wyłączona — własny tekst niżej daje spójny WYSIWYG.
     z.push(`^FO${d(b.x)},${d(b.y)}^BCN,${d(b.h)},N,N,N^FD${fd(b.code, a)}^FS`);
   }
 

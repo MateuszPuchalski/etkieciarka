@@ -5,18 +5,40 @@ export interface LabelData {
   shelf: string;  // półka, np. "03"
 }
 
+export type HorizontalAlign = 'left' | 'center' | 'right';
+
 export interface LabelConfig {
   widthMm: number;
   heightMm: number;
   dpi: 203 | 300;
+
+  // Ogólna geometria etykiety
+  contentPaddingMm: number;
+  sectionGapMm: number;
+  rackWidthPercent: number;
+  rowGapMm: number;
+  dividerThicknessMm: number;
+
+  // Regał
+  showRack: boolean;
   rackFontScale: number;   // 0.5–1.5
+  rackAlign: HorizontalAlign;
+
+  // Kolumna / półka
   headerFontScale: number; // 0.5–1.5
-  barcodeHeightMm: number;
+  valueFontScale: number;  // 0.5–1.5
+  rightRowHeightPercent: number;
   showColumnBar: boolean;
   showShelf: boolean;
+  showDividers: boolean;
+
+  // Kod kreskowy
+  barcodeHeightMm: number;
+  barcodeWidthPercent: number;
+  barcodeTextFontScale: number;
   showBarcode: boolean;
   showBarcodeText: boolean;
-  showDividers: boolean;
+
   columnLabel: string;
   shelfLabel: string;
   codeTemplate: string; // np. "{regal}-{kolumna}-{polka}"
@@ -57,14 +79,30 @@ export const DEFAULT_CONFIG: LabelConfig = {
   widthMm: 100,
   heightMm: 60,
   dpi: 203,
+
+  contentPaddingMm: 3,
+  sectionGapMm: 2,
+  rackWidthPercent: 42,
+  rowGapMm: 3,
+  dividerThicknessMm: 0.4,
+
+  showRack: true,
   rackFontScale: 1,
+  rackAlign: 'left',
+
   headerFontScale: 1,
-  barcodeHeightMm: 12,
+  valueFontScale: 1,
+  rightRowHeightPercent: 44,
   showColumnBar: true,
   showShelf: true,
+  showDividers: true,
+
+  barcodeHeightMm: 12,
+  barcodeWidthPercent: 100,
+  barcodeTextFontScale: 1,
   showBarcode: true,
   showBarcodeText: true,
-  showDividers: true,
+
   columnLabel: 'KOLUMNA',
   shelfLabel: 'Półka',
   codeTemplate: '{regal}-{kolumna}-{polka}',
