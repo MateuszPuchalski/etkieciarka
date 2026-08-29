@@ -31,19 +31,26 @@ export interface LabelLayout {
 export function computeLayout(cfg: LabelConfig, data: LabelData): LabelLayout {
   const W = cfg.widthMm;
   const H = cfg.heightMm;
-  const maxPad = Math.max(0.5, Math.min(W, H) * 0.18);
-  const pad = clamp(cfg.contentPaddingMm, 0, maxPad);
+
+  const maxHorizontalMargin = Math.max(0, W * 0.45);
+  const maxVerticalMargin = Math.max(0, H * 0.45);
+  const marginLeft = clamp(cfg.marginLeftMm, 0, maxHorizontalMargin);
+  const marginRight = clamp(cfg.marginRightMm, 0, maxHorizontalMargin);
+  const marginTop = clamp(cfg.marginTopMm, 0, maxVerticalMargin);
+  const marginBottom = clamp(cfg.marginBottomMm, 0, maxVerticalMargin);
+
   const inset = clamp(W * 0.012, 0.8, 2);
-  const innerW = Math.max(1, W - 2 * pad);
+  const innerW = Math.max(1, W - marginLeft - marginRight);
+  const innerH = Math.max(4, H - marginTop - marginBottom);
 
   const textFontBase = clamp(H * 0.062, 2, 4.5);
   const textFont = textFontBase * cfg.barcodeTextFontScale;
   const textH = cfg.showBarcodeText ? textFont * 1.3 : 0;
-  const bcH = cfg.showBarcode ? clamp(cfg.barcodeHeightMm, 4, H * 0.42) : 0;
-  const gapB = bcH + textH > 0 ? Math.max(0.5, pad * 0.6) : 0;
+  const bcH = cfg.showBarcode ? clamp(cfg.barcodeHeightMm, 4, innerH * 0.42) : 0;
+  const gapB = bcH + textH > 0 ? Math.max(0.5, Math.min(innerW, innerH) * 0.018) : 0;
 
-  const topY = pad;
-  const topH = Math.max(4, H - 2 * pad - bcH - textH - gapB);
+  const topY = marginTop;
+  const topH = Math.max(4, innerH - bcH - textH - gapB);
 
   const hasRight = cfg.showColumnBar || cfg.showShelf;
   const hasRack = cfg.showRack;
@@ -58,7 +65,7 @@ export function computeLayout(cfg: LabelConfig, data: LabelData): LabelLayout {
     ? Math.min(topH * 0.75, Math.max(1, leftW) / (rackLen * 0.55)) * cfg.rackFontScale
     : 0;
 
-  const rightX = hasRack ? pad + leftW + gapMid : pad;
+  const rightX = hasRack ? marginLeft + leftW + gapMid : marginLeft;
   const rowH = topH * clamp(cfg.rightRowHeightPercent, 20, 50) / 100;
   const configuredRowGap = clamp(cfg.rowGapMm, 0, topH * 0.4);
   const rowGap = cfg.showColumnBar && cfg.showShelf
@@ -84,12 +91,12 @@ export function computeLayout(cfg: LabelConfig, data: LabelData): LabelLayout {
     const t = clamp(cfg.dividerThicknessMm, 0.15, 2);
     const hLineY = gapB > 0 ? topY + topH + gapB / 2 - t / 2 : null;
     if (hasRack && hasRight) {
-      const vX = pad + leftW + gapMid / 2 - t / 2;
-      const vBottom = hLineY !== null ? hLineY + t : H - pad;
+      const vX = marginLeft + leftW + gapMid / 2 - t / 2;
+      const vBottom = hLineY !== null ? hLineY + t : H - marginBottom;
       dividers.push({ x: vX, y: topY, w: t, h: Math.max(0, vBottom - topY) });
     }
     if (hLineY !== null) {
-      dividers.push({ x: pad, y: hLineY, w: innerW, h: t });
+      dividers.push({ x: marginLeft, y: hLineY, w: innerW, h: t });
     }
   }
 
@@ -98,7 +105,7 @@ export function computeLayout(cfg: LabelConfig, data: LabelData): LabelLayout {
   return {
     inset,
     dividers,
-    rack: { x: pad, y: topY, w: leftW, h: topH, fontMm: rackFont },
+    rack: { x: marginLeft, y: topY, w: leftW, h: topH, fontMm: rackFont },
     columnBar: { x: rightX, y: topY, w: rightW, h: rowH, labelFontMm: columnLabelFontMm, valueFontMm },
     shelfRow: {
       x: rightX,
@@ -108,9 +115,9 @@ export function computeLayout(cfg: LabelConfig, data: LabelData): LabelLayout {
       labelFontMm: shelfLabelFontMm,
       valueFontMm,
     },
-    barcode: { x: pad + (innerW - bcW) / 2, y: bcY, w: bcW, h: bcH, moduleDots, code },
+    barcode: { x: marginLeft + (innerW - bcW) / 2, y: bcY, w: bcW, h: bcH, moduleDots, code },
     barcodeText: {
-      x: pad,
+      x: marginLeft,
       y: bcY + bcH + (cfg.showBarcode ? 0.6 : 0),
       w: innerW,
       h: textH,
