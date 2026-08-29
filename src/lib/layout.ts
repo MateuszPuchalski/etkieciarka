@@ -16,8 +16,6 @@ export interface Box {
   h: number;
 }
 
-/** Geometria wszystkich elementów etykiety w milimetrach — jedyne źródło
- *  prawdy dla podglądu SVG, druku z przeglądarki i generatora ZPL. */
 export interface LabelLayout {
   inset: number;
   dividers: Box[];
@@ -26,6 +24,14 @@ export interface LabelLayout {
   shelfRow: Box & { labelFontMm: number; valueFontMm: number };
   barcode: Box & { moduleDots: number; code: string };
   barcodeText: Box & { fontMm: number; text: string };
+}
+
+function offsetBox<T extends Box>(box: T, dx: number, dy: number, W: number, H: number): T {
+  return {
+    ...box,
+    x: clamp(box.x + dx, 0, Math.max(0, W - box.w)),
+    y: clamp(box.y + dy, 0, Math.max(0, H - box.h)),
+  };
 }
 
 export function computeLayout(cfg: LabelConfig, data: LabelData): LabelLayout {
@@ -86,6 +92,51 @@ export function computeLayout(cfg: LabelConfig, data: LabelData): LabelLayout {
   const bcW = Math.min(barcodeAreaW, naturalBcW);
   const bcY = topY + topH + gapB;
 
+  const shelfY = cfg.showColumnBar ? topY + rowH + rowGap : topY;
+
+  const rack = offsetBox(
+    { x: marginLeft, y: topY, w: leftW, h: topH, fontMm: rackFont },
+    cfg.rackOffsetX,
+    cfg.rackOffsetY,
+    W,
+    H,
+  );
+  const columnBar = offsetBox(
+    { x: rightX, y: topY, w: rightW, h: rowH, labelFontMm: columnLabelFontMm, valueFontMm },
+    cfg.rightOffsetX,
+    cfg.rightOffsetY,
+    W,
+    H,
+  );
+  const shelfRow = offsetBox(
+    { x: rightX, y: shelfY, w: rightW, h: rowH, labelFontMm: shelfLabelFontMm, valueFontMm },
+    cfg.rightOffsetX,
+    cfg.rightOffsetY,
+    W,
+    H,
+  );
+  const barcode = offsetBox(
+    { x: marginLeft + (innerW - bcW) / 2, y: bcY, w: bcW, h: bcH, moduleDots, code },
+    cfg.barcodeOffsetX,
+    cfg.barcodeOffsetY,
+    W,
+    H,
+  );
+  const barcodeText = offsetBox(
+    {
+      x: marginLeft,
+      y: bcY + bcH + (cfg.showBarcode ? 0.6 : 0),
+      w: innerW,
+      h: textH,
+      fontMm: textFont,
+      text: code,
+    },
+    cfg.barcodeTextOffsetX,
+    cfg.barcodeTextOffsetY,
+    W,
+    H,
+  );
+
   const dividers: Box[] = [];
   if (cfg.showDividers) {
     const t = clamp(cfg.dividerThicknessMm, 0.15, 2);
@@ -95,34 +146,8 @@ export function computeLayout(cfg: LabelConfig, data: LabelData): LabelLayout {
       const vBottom = hLineY !== null ? hLineY + t : H - marginBottom;
       dividers.push({ x: vX, y: topY, w: t, h: Math.max(0, vBottom - topY) });
     }
-    if (hLineY !== null) {
-      dividers.push({ x: marginLeft, y: hLineY, w: innerW, h: t });
-    }
+    if (hLineY !== null) dividers.push({ x: marginLeft, y: hLineY, w: innerW, h: t });
   }
 
-  const shelfY = cfg.showColumnBar ? topY + rowH + rowGap : topY;
-
-  return {
-    inset,
-    dividers,
-    rack: { x: marginLeft, y: topY, w: leftW, h: topH, fontMm: rackFont },
-    columnBar: { x: rightX, y: topY, w: rightW, h: rowH, labelFontMm: columnLabelFontMm, valueFontMm },
-    shelfRow: {
-      x: rightX,
-      y: shelfY,
-      w: rightW,
-      h: rowH,
-      labelFontMm: shelfLabelFontMm,
-      valueFontMm,
-    },
-    barcode: { x: marginLeft + (innerW - bcW) / 2, y: bcY, w: bcW, h: bcH, moduleDots, code },
-    barcodeText: {
-      x: marginLeft,
-      y: bcY + bcH + (cfg.showBarcode ? 0.6 : 0),
-      w: innerW,
-      h: textH,
-      fontMm: textFont,
-      text: code,
-    },
-  };
+  return { inset, dividers, rack, columnBar, shelfRow, barcode, barcodeText };
 }
