@@ -76,12 +76,18 @@ export interface SizePreset {
 export const SIZE_PRESETS: SizePreset[] = [
   { name: '100 × 60 mm', widthMm: 100, heightMm: 60 },
   { name: '100 × 50 mm', widthMm: 100, heightMm: 50 },
+  { name: '80 × 50 mm', widthMm: 80, heightMm: 50 },
+  { name: '80 × 40 mm', widthMm: 80, heightMm: 40 },
+  { name: '70 × 50 mm', widthMm: 70, heightMm: 50 },
+  { name: '60 × 40 mm', widthMm: 60, heightMm: 40 },
   { name: '57 × 32 mm', widthMm: 57, heightMm: 32 },
+  { name: '50 × 30 mm', widthMm: 50, heightMm: 30 },
+  { name: '40 × 30 mm', widthMm: 40, heightMm: 30 },
 ];
 
 export const DEFAULT_CONFIG: LabelConfig = {
-  widthMm: 100,
-  heightMm: 60,
+  widthMm: 80,
+  heightMm: 50,
   dpi: 203,
 
   marginTopMm: 3,
